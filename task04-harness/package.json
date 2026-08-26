@@ -1,0 +1,21 @@
+{
+  "name": "smartec-web-services",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=24.20.0 <25",
+    "pnpm": ">=11.24.0 <12"
+  },
+  "scripts": {
+    "dev": "turbo run dev --filter=@smartec/web",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --check .",
+    "format:write": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "3.9.6",
+    "turbo": "2.10.11"
+  }
+}

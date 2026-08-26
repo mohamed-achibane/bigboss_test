@@ -1,0 +1,16 @@
+{
+  "name": "@smartec/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint/next": "./eslint/next.mjs",
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  },
+  "dependencies": {
+    "eslint-config-next": "16.3.3"
+  },
+  "peerDependencies": {
+    "eslint": ">=10.0.0"
+  }
+}

@@ -1,0 +1,73 @@
+name: Task 04 Isolated Verification
+
+on:
+  push:
+    branches:
+      - task04-ci-harness-20260826
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: task04-harness
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
+
+      - name: Install and generate lockfile
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Format check
+        run: pnpm format
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Verify standalone runtime and health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          server_file="$(find apps/web/.next/standalone -name server.js -type f -print -quit)"
+          test -n "$server_file"
+          PORT=3000 HOSTNAME=127.0.0.1 node "$server_file" > /tmp/task04-web.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error -D /tmp/health.headers -o /tmp/health.json http://127.0.0.1:3000/healthz; then
+              break
+            fi
+            sleep 1
+          done
+          node -e 'const fs=require("fs"); const body=JSON.parse(fs.readFileSync("/tmp/health.json","utf8")); if (body.status !== "ok") process.exit(1)'
+          grep -qi '^cache-control: no-store' /tmp/health.headers
+          curl --fail --silent --show-error http://127.0.0.1:3000/ > /dev/null
+
+      - name: Upload generated lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: task04-pnpm-lock
+          path: task04-harness/pnpm-lock.yaml
+          if-no-files-found: error
