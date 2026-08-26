@@ -12,7 +12,11 @@ function parseAppEnvironment(value: string | undefined): AppEnvironment {
   return resolved as AppEnvironment;
 }
 
-function parseUrl(name: string, value: string | undefined, fallback: string): URL {
+function parseUrl(
+  name: string,
+  value: string | undefined,
+  fallback: string,
+): URL {
   const resolved = value ?? fallback;
 
   try {
