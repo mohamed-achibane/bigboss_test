@@ -1,2 +1,29 @@
-import type { ReactNode } from "react"; import { cn } from "../lib/cn";
-export function ControlPanelFrame({ children, className, label = "Control panel illustration" }: { children: ReactNode; className?: string; label?: string }) { return <figure className={cn("overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-[var(--shadow-lg)]", className)} data-illustration="true"><figcaption className="flex items-center gap-2 border-b border-border bg-muted/60 px-4 py-3 text-xs font-medium text-muted-foreground"><span aria-hidden="true" className="size-2 rounded-full bg-border" /><span aria-hidden="true" className="size-2 rounded-full bg-border" /><span aria-hidden="true" className="size-2 rounded-full bg-border" /><span className="ml-2">{label}</span></figcaption><div className="p-5">{children}</div></figure>; }
+import type { ReactNode } from "react";
+import { cn } from "../lib/cn";
+export function ControlPanelFrame({
+  children,
+  className,
+  label = "Control panel illustration",
+}: {
+  children: ReactNode;
+  className?: string;
+  label?: string;
+}) {
+  return (
+    <figure
+      className={cn(
+        "overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-[var(--shadow-lg)]",
+        className,
+      )}
+      data-illustration="true"
+    >
+      <figcaption className="flex items-center gap-2 border-b border-border bg-muted/60 px-4 py-3 text-xs font-medium text-muted-foreground">
+        <span aria-hidden="true" className="size-2 rounded-full bg-border" />
+        <span aria-hidden="true" className="size-2 rounded-full bg-border" />
+        <span aria-hidden="true" className="size-2 rounded-full bg-border" />
+        <span className="ml-2">{label}</span>
+      </figcaption>
+      <div className="p-5">{children}</div>
+    </figure>
+  );
+}

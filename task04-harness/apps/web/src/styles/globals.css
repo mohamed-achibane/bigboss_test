@@ -59,7 +59,10 @@
 
 @layer utilities {
   .site-container {
-    width: min(100% - (2 * var(--site-page-padding)), var(--site-container-max));
+    width: min(
+      100% - (2 * var(--site-page-padding)),
+      var(--site-container-max)
+    );
     margin-inline: auto;
   }
 
@@ -73,8 +76,16 @@
 
   .surface-grid {
     background-image:
-      linear-gradient(to right, color-mix(in srgb, var(--border) 42%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in srgb, var(--border) 42%, transparent) 1px, transparent 1px);
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--border) 42%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--border) 42%, transparent) 1px,
+        transparent 1px
+      );
     background-size: 2rem 2rem;
   }
 }

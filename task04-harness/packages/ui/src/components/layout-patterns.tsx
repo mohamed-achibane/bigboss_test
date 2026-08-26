@@ -1,7 +1,89 @@
-import type { ComponentProps, ReactNode } from "react"; import { cn } from "../lib/cn";
-export function Container({ className, ...props }: ComponentProps<"div">) { return <div className={cn("site-container", className)} {...props} />; }
-export function Section({ className, ...props }: ComponentProps<"section">) { return <section className={cn("site-section", className)} {...props} />; }
-export function HeroPattern({ eyebrow, title, description, actions, visual, className, ...props }: ComponentProps<"section"> & { eyebrow?: string; title: string; description: string; actions?: ReactNode; visual?: ReactNode }) { return <section className={cn("relative overflow-hidden bg-[var(--gradient-hero)] py-[var(--site-hero-space)]", className)} {...props}><Container className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]"><div>{eyebrow ? <p className="mb-5 text-xs font-bold uppercase tracking-[var(--tracking-label)] text-primary">{eyebrow}</p> : null}<h1 className="max-w-[12ch] text-[length:var(--text-display)] font-semibold leading-[var(--leading-display)] tracking-[var(--tracking-display)]">{title}</h1><p className="mt-6 max-w-[42rem] text-[length:var(--text-body-lg)] leading-8 text-muted-foreground">{description}</p>{actions ? <div className="mt-8 flex flex-wrap gap-3">{actions}</div> : null}</div>{visual ? <div>{visual}</div> : null}</Container></section>; }
-export function FeatureGrid({ className, ...props }: ComponentProps<"div">) { return <div className={cn("grid gap-[var(--site-grid-gap)] md:grid-cols-2 xl:grid-cols-3", className)} {...props} />; }
-export function TrustStrip({ className, ...props }: ComponentProps<"div">) { return <div className={cn("grid gap-3 rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground sm:grid-cols-3", className)} {...props} />; }
-export function InfrastructurePanel({ className, ...props }: ComponentProps<"div">) { return <div className={cn("rounded-xl border border-border bg-[var(--gradient-panel)] p-6 shadow-[var(--shadow-md)]", className)} {...props} />; }
+import type { ComponentProps, ReactNode } from "react";
+import { cn } from "../lib/cn";
+export function Container({ className, ...props }: ComponentProps<"div">) {
+  return <div className={cn("site-container", className)} {...props} />;
+}
+export function Section({ className, ...props }: ComponentProps<"section">) {
+  return <section className={cn("site-section", className)} {...props} />;
+}
+export function HeroPattern({
+  eyebrow,
+  title,
+  description,
+  actions,
+  visual,
+  className,
+  ...props
+}: ComponentProps<"section"> & {
+  eyebrow?: string;
+  title: string;
+  description: string;
+  actions?: ReactNode;
+  visual?: ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "relative overflow-hidden bg-[var(--gradient-hero)] py-[var(--site-hero-space)]",
+        className,
+      )}
+      {...props}
+    >
+      <Container className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          {eyebrow ? (
+            <p className="mb-5 text-xs font-bold uppercase tracking-[var(--tracking-label)] text-primary">
+              {eyebrow}
+            </p>
+          ) : null}
+          <h1 className="max-w-[12ch] text-[length:var(--text-display)] font-semibold leading-[var(--leading-display)] tracking-[var(--tracking-display)]">
+            {title}
+          </h1>
+          <p className="mt-6 max-w-[42rem] text-[length:var(--text-body-lg)] leading-8 text-muted-foreground">
+            {description}
+          </p>
+          {actions ? (
+            <div className="mt-8 flex flex-wrap gap-3">{actions}</div>
+          ) : null}
+        </div>
+        {visual ? <div>{visual}</div> : null}
+      </Container>
+    </section>
+  );
+}
+export function FeatureGrid({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "grid gap-[var(--site-grid-gap)] md:grid-cols-2 xl:grid-cols-3",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+export function TrustStrip({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "grid gap-3 rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground sm:grid-cols-3",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+export function InfrastructurePanel({
+  className,
+  ...props
+}: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-[var(--gradient-panel)] p-6 shadow-[var(--shadow-md)]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}

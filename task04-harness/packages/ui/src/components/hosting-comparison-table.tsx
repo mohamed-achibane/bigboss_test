@@ -1,3 +1,67 @@
-import type { ReactNode } from "react"; import { cn } from "../lib/cn";
-export type ComparisonColumn = { key: string; label: string }; export type ComparisonRow = { feature: string; values: Record<string, ReactNode> };
-export function HostingComparisonTable({ caption, columns, rows, className }: { caption: string; columns: ComparisonColumn[]; rows: ComparisonRow[]; className?: string }) { return <div className={cn("overflow-x-auto rounded-xl border border-border", className)}><table className="w-full min-w-[42rem] border-collapse bg-card text-left text-sm"><caption className="sr-only">{caption}</caption><thead><tr className="border-b border-border bg-muted/70"><th scope="col" className="px-5 py-4 font-semibold">Feature</th>{columns.map((column) => <th key={column.key} scope="col" className="px-5 py-4 font-semibold">{column.label}</th>)}</tr></thead><tbody>{rows.map((row) => <tr key={row.feature} className="border-b border-border last:border-0"><th scope="row" className="px-5 py-4 font-medium text-foreground">{row.feature}</th>{columns.map((column) => <td key={column.key} className="px-5 py-4 text-muted-foreground">{row.values[column.key] ?? "—"}</td>)}</tr>)}</tbody></table></div>; }
+import type { ReactNode } from "react";
+import { cn } from "../lib/cn";
+export type ComparisonColumn = { key: string; label: string };
+export type ComparisonRow = {
+  feature: string;
+  values: Record<string, ReactNode>;
+};
+export function HostingComparisonTable({
+  caption,
+  columns,
+  rows,
+  className,
+}: {
+  caption: string;
+  columns: ComparisonColumn[];
+  rows: ComparisonRow[];
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "overflow-x-auto rounded-xl border border-border",
+        className,
+      )}
+    >
+      <table className="w-full min-w-[42rem] border-collapse bg-card text-left text-sm">
+        <caption className="sr-only">{caption}</caption>
+        <thead>
+          <tr className="border-b border-border bg-muted/70">
+            <th scope="col" className="px-5 py-4 font-semibold">
+              Feature
+            </th>
+            {columns.map((column) => (
+              <th
+                key={column.key}
+                scope="col"
+                className="px-5 py-4 font-semibold"
+              >
+                {column.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.feature}
+              className="border-b border-border last:border-0"
+            >
+              <th scope="row" className="px-5 py-4 font-medium text-foreground">
+                {row.feature}
+              </th>
+              {columns.map((column) => (
+                <td
+                  key={column.key}
+                  className="px-5 py-4 text-muted-foreground"
+                >
+                  {row.values[column.key] ?? "—"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

@@ -1,0 +1,2 @@
+$ eslint src --max-warnings=0
+Pages directory cannot be found at /home/runner/work/bigboss_test/bigboss_test/task04-harness/packages/ui/pages or /home/runner/work/bigboss_test/bigboss_test/task04-harness/packages/ui/src/pages. If using a custom path, please configure with the `no-html-link-for-pages` rule in your eslint config file.
