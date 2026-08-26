@@ -30,15 +30,22 @@ jobs:
       - name: Generate full lockfile
         run: pnpm install --no-frozen-lockfile
 
-      - name: Remove nonessential packages metadata
+      - name: Minimize packages metadata while preserving package keys
         run: |
           python - <<'PY'
           from pathlib import Path
           path = Path('pnpm-lock.yaml')
           text = path.read_text()
-          start = text.index('\npackages:\n')
-          end = text.index('\nsnapshots:\n')
-          compact = text[:start] + '\n' + text[end:]
+          start_marker = '\npackages:\n'
+          end_marker = '\nsnapshots:\n'
+          start = text.index(start_marker)
+          end = text.index(end_marker)
+          package_body = text[start + len(start_marker):end]
+          package_keys = []
+          for line in package_body.splitlines():
+              if line.startswith('  ') and not line.startswith('    ') and line.strip().endswith(':'):
+                  package_keys.append(line[:-1] + ': {}')
+          compact = text[:start] + start_marker + '\n'.join(package_keys) + '\n' + text[end:]
           path.write_text(compact)
           print(f'compact lockfile bytes={path.stat().st_size}')
           PY
