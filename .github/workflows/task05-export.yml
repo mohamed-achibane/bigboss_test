@@ -1,0 +1,29 @@
+name: Task 05 Formatted Export
+
+on:
+  push:
+    branches:
+      - task04-ci-harness-20260826
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: task05-formatted-source
+          path: |
+            task04-harness/apps/web/package.json
+            task04-harness/apps/web/next.config.ts
+            task04-harness/apps/web/src/app/globals.css
+            task04-harness/apps/web/src/app/page.tsx
+            task04-harness/apps/web/src/styles
+            task04-harness/apps/web/src/components/design-system
+            task04-harness/packages/ui
+            task04-harness/pnpm-lock.yaml
+          if-no-files-found: error
