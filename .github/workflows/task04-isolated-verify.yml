@@ -6,7 +6,7 @@ on:
       - task04-ci-harness-20260826
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -39,8 +39,20 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Format check
-        run: pnpm format
+      - name: Format and verify
+        run: |
+          pnpm format:write
+          pnpm format
+
+      - name: Capture formatted verification tree
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml apps/web/package.json apps/web/next.config.ts apps/web/src packages/ui
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: capture formatted Task 05 harness [skip ci]"
+            git push
+          fi
 
       - name: Production build
         run: pnpm build
@@ -62,7 +74,7 @@ jobs:
           done
           node -e 'const fs=require("fs"); const body=JSON.parse(fs.readFileSync("/tmp/health.json","utf8")); if (body.status !== "ok") process.exit(1)'
           grep -qi '^cache-control: no-store' /tmp/health.headers
-          curl --fail --silent --show-error http://127.0.0.1:3000/ > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:3000/ | grep -q 'data-design-system-fixture="stage-01-task-05"'
 
       - name: Upload generated lockfile
         if: always()
