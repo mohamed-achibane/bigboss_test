@@ -1,0 +1,67 @@
+name: Task 05 Compact Lockfile Verification
+
+on:
+  push:
+    branches:
+      - task04-ci-harness-20260826
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: task04-harness
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
+
+      - name: Generate full lockfile
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Remove nonessential packages metadata
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('pnpm-lock.yaml')
+          text = path.read_text()
+          start = text.index('\npackages:\n')
+          end = text.index('\nsnapshots:\n')
+          compact = text[:start] + '\n' + text[end:]
+          path.write_text(compact)
+          print(f'compact lockfile bytes={path.stat().st_size}')
+          PY
+
+      - name: Clean installation state
+        run: rm -rf node_modules apps/web/node_modules packages/config/node_modules packages/ui/node_modules
+
+      - name: Verify compact frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Upload compact lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: task05-compact-lock
+          path: task04-harness/pnpm-lock.yaml
+          if-no-files-found: error
