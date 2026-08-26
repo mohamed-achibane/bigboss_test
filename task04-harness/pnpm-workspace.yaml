@@ -5,3 +5,6 @@ packages:
 engineStrict: true
 linkWorkspacePackages: true
 preferWorkspacePackages: true
+
+allowBuilds:
+  unrs-resolver: true
