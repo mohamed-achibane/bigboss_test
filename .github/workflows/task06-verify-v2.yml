@@ -1,0 +1,117 @@
+name: Task 06 Isolated Verification v2
+
+on:
+  push:
+    branches:
+      - task06-ci-harness-20260826
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize Task 06 source and apply type narrowing fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          encoded="$(grep "printf '%s'" .github/workflows/task06-verify.yml | sed -E "s/.*printf '%s' '([^']+)'.*/\1/")"
+          printf '%s' "$encoded" | base64 -d | tar -xzf - -C task04-harness
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('task04-harness/apps/web/src/content/hosting/catalog.ts')
+          text = path.read_text()
+          text = text.replace(
+              'export const hostingCatalog = [',
+              'export const hostingCatalog: readonly PublicHostingPlan[] = [',
+              1,
+          )
+          text = text.replace(
+              '] as const satisfies readonly PublicHostingPlan[];\n',
+              '];\n',
+              1,
+          )
+          path.write_text(text)
+          PY
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
+
+      - name: Frozen install
+        working-directory: task04-harness
+        run: pnpm install --frozen-lockfile
+
+      - name: Task 06 unit tests
+        working-directory: task04-harness
+        run: pnpm test:task6
+
+      - name: Catalog contract
+        working-directory: task04-harness
+        run: pnpm validate:catalog
+
+      - name: External-destination contract
+        working-directory: task04-harness
+        run: pnpm validate:external-destinations
+
+      - name: Lint
+        working-directory: task04-harness
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: task04-harness
+        run: pnpm typecheck
+
+      - name: Format and verify
+        working-directory: task04-harness
+        run: |
+          pnpm format:write
+          pnpm format
+
+      - name: Production build
+        working-directory: task04-harness
+        run: pnpm build
+
+      - name: Standalone runtime regression
+        working-directory: task04-harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          server_file="$(find apps/web/.next/standalone -name server.js -type f -print -quit)"
+          test -n "$server_file"
+          PORT=3000 HOSTNAME=127.0.0.1 node "$server_file" >/tmp/task06-web.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error -o /tmp/task06-health.json http://127.0.0.1:3000/healthz; then
+              break
+            fi
+            sleep 1
+          done
+          node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/task06-health.json","utf8"));if(x.status!=="ok")process.exit(1)'
+
+      - name: Package formatted Task 06 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd task04-harness
+          tar -czf /tmp/task06-formatted.tgz \
+            .env.example package.json apps/web/tsconfig.json apps/web/src/lib/env.ts \
+            apps/web/src/content/hosting apps/web/src/config apps/web/src/lib/customer-operations-links.ts \
+            apps/web/tests/unit/catalog.test.ts apps/web/tests/unit/customer-operations-links.test.ts \
+            scripts/validate-catalog.mjs scripts/validate-external-destinations.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: task06-formatted-source-v2
+          path: /tmp/task06-formatted.tgz
+          if-no-files-found: error
