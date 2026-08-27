@@ -42,8 +42,8 @@ jobs:
           from pathlib import Path
           path = Path('task04-harness/packages/ui/src/components/hosting-comparison-table.tsx')
           text = path.read_text()
-          old = '<div className={cn("overflow-x-auto rounded-xl border border-border", className)}>'
-          new = '<div tabIndex={0} className={cn("overflow-x-auto rounded-xl border border-border", className)}>'
+          old = '    <div\n      className={cn('
+          new = '    <div\n      tabIndex={0}\n      className={cn('
           if old not in text:
               raise SystemExit('comparison-table accessibility patch target not found')
           path.write_text(text.replace(old, new, 1))
