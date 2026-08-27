@@ -1,0 +1,67 @@
+name: Task 07 Export Lock
+
+on:
+  push:
+    branches:
+      - task07-ci-harness-20260826
+
+permissions:
+  contents: write
+
+jobs:
+  export-lock:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Materialize verified candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          encoded="$(grep "printf '%s'" .github/workflows/task06-verify.yml | sed -E "s/.*printf '%s' '([^']+)'.*/\1/")"
+          printf '%s' "$encoded" | base64 -d | tar -xzf - -C task04-harness
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('task04-harness/apps/web/src/content/hosting/catalog.ts')
+          text = path.read_text()
+          text = text.replace(
+              'export const hostingCatalog = [',
+              'export const hostingCatalog: readonly PublicHostingPlan[] = [',
+              1,
+          )
+          text = text.replace(
+              '] as const satisfies readonly PublicHostingPlan[];\n',
+              '];\n',
+              1,
+          )
+          path.write_text(text)
+          PY
+          base64 -d task07-overlay.b64 | tar -xzf - -C task04-harness
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.24.0
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.20.0
+
+      - name: Generate exact lockfile
+        working-directory: task04-harness
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Export lockfile to branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp task04-harness/pnpm-lock.yaml task07-pnpm-lock.yaml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add task07-pnpm-lock.yaml
+          git commit -m 'test: export verified Task 07 lockfile'
+          git push
