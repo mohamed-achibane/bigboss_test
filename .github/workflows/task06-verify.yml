@@ -1,0 +1,100 @@
+name: Task 06 Isolated Verification
+
+on:
+  push:
+    branches:
+      - task06-ci-harness-20260826
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize exact Task 06 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' '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' | base64 -d | tar -xzf - -C task04-harness
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
+
+      - name: Frozen install
+        working-directory: task04-harness
+        run: pnpm install --frozen-lockfile
+
+      - name: Task 06 unit tests
+        working-directory: task04-harness
+        run: pnpm test:task6
+
+      - name: Catalog contract
+        working-directory: task04-harness
+        run: pnpm validate:catalog
+
+      - name: External-destination contract
+        working-directory: task04-harness
+        run: pnpm validate:external-destinations
+
+      - name: Lint
+        working-directory: task04-harness
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: task04-harness
+        run: pnpm typecheck
+
+      - name: Format and verify
+        working-directory: task04-harness
+        run: |
+          pnpm format:write
+          pnpm format
+
+      - name: Production build
+        working-directory: task04-harness
+        run: pnpm build
+
+      - name: Standalone runtime regression
+        working-directory: task04-harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          server_file="$(find apps/web/.next/standalone -name server.js -type f -print -quit)"
+          test -n "$server_file"
+          PORT=3000 HOSTNAME=127.0.0.1 node "$server_file" >/tmp/task06-web.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error -o /tmp/task06-health.json http://127.0.0.1:3000/healthz; then
+              break
+            fi
+            sleep 1
+          done
+          node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/task06-health.json","utf8"));if(x.status!=="ok")process.exit(1)'
+
+      - name: Package formatted Task 06 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd task04-harness
+          tar -czf /tmp/task06-formatted.tgz \
+            .env.example package.json apps/web/tsconfig.json apps/web/src/lib/env.ts \
+            apps/web/src/content/hosting apps/web/src/config apps/web/src/lib/customer-operations-links.ts \
+            apps/web/tests/unit/catalog.test.ts apps/web/tests/unit/customer-operations-links.test.ts \
+            scripts/validate-catalog.mjs scripts/validate-external-destinations.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: task06-formatted-source
+          path: /tmp/task06-formatted.tgz
+          if-no-files-found: error
