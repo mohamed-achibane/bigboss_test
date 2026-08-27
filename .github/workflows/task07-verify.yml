@@ -38,6 +38,16 @@ jobs:
           path.write_text(text)
           PY
           base64 -d task07-overlay.b64 | tar -xzf - -C task04-harness
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('task04-harness/packages/ui/src/components/hosting-comparison-table.tsx')
+          text = path.read_text()
+          old = '<div className={cn("overflow-x-auto rounded-xl border border-border", className)}>'
+          new = '<div tabIndex={0} className={cn("overflow-x-auto rounded-xl border border-border", className)}>'
+          if old not in text:
+              raise SystemExit('comparison-table accessibility patch target not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
 
       - uses: pnpm/action-setup@v6
         with:
@@ -132,6 +142,7 @@ jobs:
             package.json pnpm-lock.yaml apps/web/package.json apps/web/vitest.config.ts apps/web/playwright.config.ts \
             apps/web/tests/setup.ts apps/web/tests/fixtures apps/web/tests/unit apps/web/tests/e2e \
             apps/web/tests/accessibility apps/web/tests/performance \
+            packages/ui/src/components/hosting-comparison-table.tsx \
             scripts/lib/redirect-validation.mjs scripts/validate-redirect-map.mjs scripts/validate-seo.mjs \
             scripts/check-no-secret-client-output.mjs
 
