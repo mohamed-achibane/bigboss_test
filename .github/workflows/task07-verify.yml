@@ -1,0 +1,142 @@
+name: Task 07 Isolated Verification
+
+on:
+  push:
+    branches:
+      - task07-ci-harness-20260826
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Materialize current Stage 1 source and Task 07 overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          encoded="$(grep "printf '%s'" .github/workflows/task06-verify.yml | sed -E "s/.*printf '%s' '([^']+)'.*/\1/")"
+          printf '%s' "$encoded" | base64 -d | tar -xzf - -C task04-harness
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('task04-harness/apps/web/src/content/hosting/catalog.ts')
+          text = path.read_text()
+          text = text.replace(
+              'export const hostingCatalog = [',
+              'export const hostingCatalog: readonly PublicHostingPlan[] = [',
+              1,
+          )
+          text = text.replace(
+              '] as const satisfies readonly PublicHostingPlan[];\n',
+              '];\n',
+              1,
+          )
+          path.write_text(text)
+          PY
+          base64 -d task07-overlay.b64 | tar -xzf - -C task04-harness
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.24.0
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.20.0
+
+      - name: Resolve Task 07 lockfile
+        working-directory: task04-harness
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Format Task 07 source
+        working-directory: task04-harness
+        run: pnpm format:write
+
+      - name: Prove clean frozen install
+        working-directory: task04-harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf node_modules apps/web/node_modules packages/config/node_modules packages/ui/node_modules
+          pnpm install --frozen-lockfile
+
+      - name: Audit production dependencies
+        working-directory: task04-harness
+        run: pnpm audit --prod --audit-level=high
+
+      - name: Format check
+        working-directory: task04-harness
+        run: pnpm format
+
+      - name: Lint
+        working-directory: task04-harness
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: task04-harness
+        run: pnpm typecheck
+
+      - name: Catalog contract
+        working-directory: task04-harness
+        run: pnpm validate:catalog
+
+      - name: WHMCS destination contract
+        working-directory: task04-harness
+        run: pnpm validate:external-destinations
+
+      - name: Redirect contract
+        working-directory: task04-harness
+        run: pnpm validate:redirect-map
+
+      - name: SEO foundation contract
+        working-directory: task04-harness
+        run: pnpm validate:seo
+
+      - name: Unit tests
+        working-directory: task04-harness
+        run: pnpm test:unit
+
+      - name: Production build
+        working-directory: task04-harness
+        run: pnpm build
+
+      - name: Client secret scan
+        working-directory: task04-harness
+        run: pnpm check:no-secret-client-output
+
+      - name: Install Playwright browsers
+        working-directory: task04-harness
+        run: pnpm --filter @smartec/web exec playwright install --with-deps chromium firefox webkit
+
+      - name: Browser and accessibility tests
+        working-directory: task04-harness
+        env:
+          CI: "true"
+        run: pnpm test:e2e
+
+      - name: Lighthouse CI smoke
+        working-directory: task04-harness
+        run: pnpm test:lighthouse
+
+      - name: Package verified Task 07 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd task04-harness
+          tar -czf /tmp/task07-verified.tgz \
+            .github/workflows/ci.yml .gitignore .prettierignore \
+            package.json pnpm-lock.yaml apps/web/package.json apps/web/vitest.config.ts apps/web/playwright.config.ts \
+            apps/web/tests/setup.ts apps/web/tests/fixtures apps/web/tests/unit apps/web/tests/e2e \
+            apps/web/tests/accessibility apps/web/tests/performance \
+            scripts/lib/redirect-validation.mjs scripts/validate-redirect-map.mjs scripts/validate-seo.mjs \
+            scripts/check-no-secret-client-output.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: task07-verified-source
+          path: /tmp/task07-verified.tgz
+          if-no-files-found: error
